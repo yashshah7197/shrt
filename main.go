@@ -7,9 +7,11 @@ import (
 	"syscall"
 )
 
+var build = "develop"
+
 func main() {
-	log.Println("Started shrt service!")
-	defer log.Println("Stopped shrt service!")
+	log.Printf("Started shrt %s service!\n", build)
+	defer log.Printf("Stopped shrt %s service!\n", build)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
