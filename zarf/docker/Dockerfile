@@ -1,5 +1,5 @@
 # Build the Go binary
-FROM golang:1.17 as build_shrt
+FROM golang:1.17 AS build_shrt-service
 ENV CGO_ENABLED 0
 ARG BUILD_REF
 
@@ -14,12 +14,12 @@ RUN go build -ldflags "-X main.build=${BUILD_REF}"
 FROM alpine:3.15
 ARG BUILD_DATE
 ARG BUILD_REF
-COPY --from=build_shrt /shrt/shrt /shrt/shrt
+COPY --from=build_shrt-service /shrt/shrt /shrt/shrt
 WORKDIR /shrt
 CMD ["./shrt"]
 
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.title="shrt" \
+      org.opencontainers.image.title="shrt-service" \
       org.opencontainers.image.authors="Yash Shah <yash@yashshah.io>" \
       org.opencontainers.image.source="https://github.com/yashshah7197/shrt" \
       org.opencontainers.image.revision="${BUILD_REF}" \
