@@ -6,6 +6,10 @@ KIND_CLUSTER := shrt-service-cluster
 run:
 	go run main.go
 
+tidy:
+	go mod tidy
+	go mod vendor
+
 docker-image:
 	docker build \
 			-f zarf/docker/Dockerfile \
@@ -18,9 +22,11 @@ kind-load:
 	kind load docker-image shrt-service-arm64:$(VERSION) --name $(KIND_CLUSTER)
 
 kind-apply:
-	cat zarf/k8s/base/shrt-service-pod/base-shrt-service.yaml | kubectl apply -f -
+	kustomize build zarf/k8s/kind/shrt-service-pod | kubectl apply -f -
 
 kind-update: docker-image kind-load kind-restart
+
+kind-update-apply: docker-image kind-load kind-apply
 
 kind-up:
 	kind create cluster \
