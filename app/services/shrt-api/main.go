@@ -21,12 +21,12 @@ func main() {
 
 	g := runtime.GOMAXPROCS(0)
 
-	log.Printf("Started shrt-api %s service! CPUs: %d\n", build, g)
-	defer log.Printf("Stopped shrt-api %s service!\n", build)
+	log.Printf("Started shrt-api %s! CPUs: %d\n", build, g)
+	defer log.Printf("Stopped shrt-api %s!\n", build)
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	<-shutdown
 
-	log.Println("Stopping shrt-api service...")
+	log.Println("Stopping shrt-api...")
 }

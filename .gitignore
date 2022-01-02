@@ -175,3 +175,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Project binaries
+app/services/shrt-api/shrt-api
