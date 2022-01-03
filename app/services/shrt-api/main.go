@@ -2,31 +2,45 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"os/signal"
-	"runtime"
-	"syscall"
 
-	"go.uber.org/automaxprocs/maxprocs"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-var build = "develop"
-
 func main() {
-	if _, err := maxprocs.Set(); err != nil {
-		fmt.Println("maxprocs error:", err)
+	// Construct the application logger
+	log, err := initLogger("SHRT-API")
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
+	defer log.Sync()
 
-	g := runtime.GOMAXPROCS(0)
+	// Perform the startup and shutdown sequence
+	if err := run(log); err != nil {
+		log.Errorw("startup", "ERROR", err)
+		os.Exit(1)
+	}
+}
 
-	log.Printf("Started shrt-api %s! CPUs: %d\n", build, g)
-	defer log.Printf("Stopped shrt-api %s!\n", build)
+func run(log *zap.SugaredLogger) error {
+	return nil
+}
 
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-	<-shutdown
+func initLogger(service string) (*zap.SugaredLogger, error) {
+	config := zap.NewProductionConfig()
+	config.OutputPaths = []string{"stdout"}
+	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	config.DisableStacktrace = true
+	config.InitialFields = map[string]interface{}{
+		"service": service,
+	}
 
-	log.Println("Stopping shrt-api...")
+	log, err := config.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	return log.Sugar(), nil
 }
