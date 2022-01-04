@@ -5,7 +5,7 @@ SHELL := /bin/bash
 # ======================================================================================================================
 
 run shrt-api:
-	go run app/services/shrt-api/main.go
+	go run app/services/shrt-api/main.go | go run app/tooling/logfmt/main.go
 
 tidy:
 	go mod tidy
@@ -67,7 +67,7 @@ kind-status-shrt-api:
 	kubectl get pods -o wide --watch
 
 kind-logs:
-	kubectl logs -l app=shrt-api --all-containers=true -f --tail=100
+	kubectl logs -l app=shrt-api --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
 
 kind-describe:
 	kubectl describe pod -l app=shrt-api
