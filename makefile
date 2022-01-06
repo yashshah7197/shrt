@@ -71,3 +71,10 @@ kind-logs:
 
 kind-describe:
 	kubectl describe pod -l app=shrt-api
+
+# ==================================================================================================
+# ExpvarMon
+# ==================================================================================================
+
+expvarmon:
+	expvarmon -ports=":4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"

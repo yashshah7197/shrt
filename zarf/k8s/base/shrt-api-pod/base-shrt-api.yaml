@@ -23,3 +23,25 @@ spec:
       containers:
         - name: shrt-api
           image: shrt-api-image
+          ports:
+            - name: shrt-api
+              containerPort: 3000
+            - name: shrt-api-debug
+              containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shrt-api-service
+  namespace: shrt-api-system
+spec:
+  type: ClusterIP
+  selector:
+    app: shrt-api
+  ports:
+    - name: shrt-api
+      port: 3000
+      targetPort: shrt-api
+    - name: shrt-api-debug
+      port: 4000
+      targetPort: shrt-api-debug
