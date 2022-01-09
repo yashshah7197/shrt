@@ -2,11 +2,13 @@
 package handlers
 
 import (
-	"encoding/json"
 	"expvar"
 	"net/http"
 	"net/http/pprof"
 	"os"
+
+	"github.com/yashshah7197/shrt/app/services/shrt-api/handlers/application/testgroup"
+	"github.com/yashshah7197/shrt/app/services/shrt-api/handlers/debug/checkgroup"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -29,6 +31,24 @@ func DebugStandardLibraryMux() *http.ServeMux {
 	return mux
 }
 
+// DebugMux registers all the debug standard library routes and then custom debug application
+// routes for the service. This bypassing the use of the DefaultServeMux. Using the DefaultServeMux
+// could be a security risk since a dependency could inject a handler into our service without
+// us knowing it.
+func DebugMux(build string, logger *zap.SugaredLogger) http.Handler {
+	mux := DebugStandardLibraryMux()
+
+	// Register the debug check endpoints.
+	cgh := checkgroup.Handlers{
+		Build:  build,
+		Logger: logger,
+	}
+	mux.HandleFunc("/debug/readiness", cgh.Readiness)
+	mux.HandleFunc("/debug/liveness", cgh.Liveness)
+
+	return mux
+}
+
 // APIMuxConfig contains all the mandatory systems required by the handlers.
 type APIMuxConfig struct {
 	Shutdown chan os.Signal
@@ -39,16 +59,11 @@ type APIMuxConfig struct {
 func APIMux(cfg APIMuxConfig) *chi.Mux {
 	mux := chi.NewMux()
 
-	h := func(w http.ResponseWriter, r *http.Request) {
-		status := struct {
-			Status string
-		}{
-			Status: "OK",
-		}
-
-		json.NewEncoder(w).Encode(status)
+	// Register the application test endpoints.
+	tgh := testgroup.Handlers{
+		Logger: cfg.Logger,
 	}
-	mux.MethodFunc(http.MethodGet, "/test", h)
+	mux.MethodFunc(http.MethodGet, "/test", tgh.Test)
 
 	return mux
 }
