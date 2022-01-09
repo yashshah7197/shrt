@@ -18,7 +18,7 @@ func (h Handlers) Test(w http.ResponseWriter, r *http.Request) {
 	status := struct {
 		Status string `json:"status"`
 	}{
-		Status: "blah",
+		Status: "OK",
 	}
 
 	statusCode := http.StatusOK

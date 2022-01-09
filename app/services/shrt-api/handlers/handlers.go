@@ -9,8 +9,8 @@ import (
 
 	"github.com/yashshah7197/shrt/app/services/shrt-api/handlers/application/testgroup"
 	"github.com/yashshah7197/shrt/app/services/shrt-api/handlers/debug/checkgroup"
+	"github.com/yashshah7197/shrt/foundation/web"
 
-	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
 
@@ -56,14 +56,14 @@ type APIMuxConfig struct {
 }
 
 // APIMux constructs an http.Handler with all application routes defined.
-func APIMux(cfg APIMuxConfig) *chi.Mux {
-	mux := chi.NewMux()
+func APIMux(cfg APIMuxConfig) *web.App {
+	app := web.NewApp(cfg.Shutdown)
 
 	// Register the application test endpoints.
 	tgh := testgroup.Handlers{
 		Logger: cfg.Logger,
 	}
-	mux.MethodFunc(http.MethodGet, "/test", tgh.Test)
+	app.MethodFunc(http.MethodGet, "/test", tgh.Test)
 
-	return mux
+	return app
 }
