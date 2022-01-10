@@ -2,6 +2,7 @@
 package testgroup
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -14,7 +15,7 @@ type Handlers struct {
 }
 
 // Test is a basic handler for development purposes.
-func (h Handlers) Test(w http.ResponseWriter, r *http.Request) {
+func (h Handlers) Test(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	status := struct {
 		Status string `json:"status"`
 	}{
@@ -22,7 +23,7 @@ func (h Handlers) Test(w http.ResponseWriter, r *http.Request) {
 	}
 
 	statusCode := http.StatusOK
-	json.NewEncoder(w).Encode(status)
-
 	h.Logger.Infow("test", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
+
+	return json.NewEncoder(w).Encode(status)
 }

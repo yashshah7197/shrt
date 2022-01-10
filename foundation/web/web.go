@@ -2,11 +2,17 @@
 package web
 
 import (
+	"context"
+	"net/http"
 	"os"
 	"syscall"
 
 	"github.com/go-chi/chi/v5"
 )
+
+// A Handler is a type that handles an HTTP request within our own small custom web framework
+// extension.
+type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
 
 // App is the entrypoint into our application and what configures our context object for each of
 // our HTTP handlers.
@@ -27,4 +33,19 @@ func NewApp(shutdown chan os.Signal) *App {
 // identified.
 func (a *App) SignalShutdown() {
 	a.shutdown <- syscall.SIGTERM
+}
+
+// Handle sets a handler function for a given HTTP method and path pair to the application server
+// mux.
+func (a *App) Handle(method string, path string, handler Handler) {
+	h := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		if err := handler(ctx, w, r); err != nil {
+			// Error handling
+			return
+		}
+	}
+
+	a.MethodFunc(method, path, h)
 }

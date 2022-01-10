@@ -57,13 +57,20 @@ type APIMuxConfig struct {
 
 // APIMux constructs an http.Handler with all application routes defined.
 func APIMux(cfg APIMuxConfig) *web.App {
+	// Construct the web.App which holds all the routes.
 	app := web.NewApp(cfg.Shutdown)
 
-	// Register the application test endpoints.
+	// Bind the different routes for the API.
+	bindRoutes(app, cfg)
+
+	return app
+}
+
+// bindRoutes binds all the API routes to their handlers.
+func bindRoutes(app *web.App, cfg APIMuxConfig) {
 	tgh := testgroup.Handlers{
 		Logger: cfg.Logger,
 	}
-	app.MethodFunc(http.MethodGet, "/test", tgh.Test)
 
-	return app
+	app.Handle(http.MethodGet, "/test", tgh.Test)
 }
