@@ -3,8 +3,9 @@ package testgroup
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
+
+	"github.com/yashshah7197/shrt/foundation/web"
 
 	"go.uber.org/zap"
 )
@@ -22,8 +23,7 @@ func (h Handlers) Test(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		Status: "OK",
 	}
 
-	statusCode := http.StatusOK
-	h.Logger.Infow("test", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
+	h.Logger.Infow("test", "statusCode", http.StatusOK, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
 
-	return json.NewEncoder(w).Encode(status)
+	return web.Respond(ctx, w, status, http.StatusOK)
 }
