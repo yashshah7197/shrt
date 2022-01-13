@@ -23,7 +23,5 @@ func (h Handlers) Test(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		Status: "OK",
 	}
 
-	h.Logger.Infow("test", "statusCode", http.StatusOK, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
-
 	return web.Respond(ctx, w, status, http.StatusOK)
 }

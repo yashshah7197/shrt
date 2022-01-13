@@ -9,6 +9,7 @@ import (
 
 	"github.com/yashshah7197/shrt/app/services/shrt-api/handlers/application/testgroup"
 	"github.com/yashshah7197/shrt/app/services/shrt-api/handlers/debug/checkgroup"
+	"github.com/yashshah7197/shrt/business/web/middleware"
 	"github.com/yashshah7197/shrt/foundation/web"
 
 	"go.uber.org/zap"
@@ -58,7 +59,10 @@ type APIMuxConfig struct {
 // APIMux constructs an http.Handler with all application routes defined.
 func APIMux(cfg APIMuxConfig) *web.App {
 	// Construct the web.App which holds all the routes.
-	app := web.NewApp(cfg.Shutdown)
+	app := web.NewApp(
+		cfg.Shutdown,
+		middleware.Logger(cfg.Logger),
+	)
 
 	// Bind the different routes for the API.
 	bindRoutes(app, cfg)
