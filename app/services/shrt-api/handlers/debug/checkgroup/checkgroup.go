@@ -31,7 +31,7 @@ func (h Handlers) Readiness(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Errorw("readiness", "ERROR", err)
 	}
 
-	h.Logger.Infow("readiness", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
+	h.Logger.Infow("readiness", "statuscode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
 }
 
 // Liveness returns simple status info if the service is alive. If the app is deployed to a
@@ -67,7 +67,7 @@ func (h Handlers) Liveness(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Errorw("liveness", "ERROR", err)
 	}
 
-	h.Logger.Infow("liveness", "statusCode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
+	h.Logger.Infow("liveness", "statuscode", statusCode, "method", r.Method, "path", r.URL.Path, "remoteaddr", r.RemoteAddr)
 }
 
 // response converts the given data to JSON, writes the Content-Type header and HTTP status code,

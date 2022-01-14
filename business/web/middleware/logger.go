@@ -14,31 +14,36 @@ import (
 func Logger(logger *zap.SugaredLogger) web.Middleware {
 	m := func(handler web.Handler) web.Handler {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			traceID := "00000000-0000-0000-0000-000000000000"
-			statusCode := http.StatusOK
-			now := time.Now()
+			// If the context is missing our web values, return an error so that it can be handled
+			// further up the chain.
+			v, err := web.GetValues(ctx)
+			if err != nil {
+				return err
+			}
 
 			logger.Infow(
 				"request started",
-				"traceid", traceID,
+				"traceid", v.TraceID,
 				"method", r.Method,
 				"path", r.URL.Path,
 				"remoteaddr", r.RemoteAddr,
 			)
 
-			err := handler(ctx, w, r)
+			// Call the next handler.
+			err = handler(ctx, w, r)
 
 			logger.Infow(
 				"request completed",
-				"traceid", traceID,
+				"traceid", v.TraceID,
 				"method", r.Method,
 				"path", r.URL.Path,
 				"remoteaddr", r.RemoteAddr,
-				"statuscode", statusCode,
+				"statuscode", v.StatusCode,
 				"since",
-				time.Since(now),
+				time.Since(v.Now),
 			)
 
+			// Return the error so that it can be handled further up the chain.
 			return err
 		}
 
