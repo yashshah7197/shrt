@@ -62,6 +62,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 	app := web.NewApp(
 		cfg.Shutdown,
 		middleware.Logger(cfg.Logger),
+		middleware.Errors(cfg.Logger),
 	)
 
 	// Bind the different routes for the API.

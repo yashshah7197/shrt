@@ -62,7 +62,7 @@ func Cause(err error) error {
 	root := err
 
 	for {
-		if err = errors.Unwrap(root); err != nil {
+		if err = errors.Unwrap(root); err == nil {
 			return root
 		}
 
