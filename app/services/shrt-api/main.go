@@ -23,7 +23,7 @@ import (
 var build = "develop"
 
 func main() {
-	// Construct the application logger
+	// Construct the application logger.
 	logger, err := initLogger("SHRT-API")
 	if err != nil {
 		fmt.Println(err)
@@ -31,7 +31,7 @@ func main() {
 	}
 	defer logger.Sync()
 
-	// Perform the startup and shutdown sequence
+	// Perform the startup and shutdown sequence.
 	if err := run(logger); err != nil {
 		logger.Errorw("startup", "ERROR", err)
 		os.Exit(1)
