@@ -63,6 +63,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 		cfg.Shutdown,
 		middleware.Logger(cfg.Logger),
 		middleware.Errors(cfg.Logger),
+		middleware.Metrics(),
 		middleware.Panics(),
 	)
 

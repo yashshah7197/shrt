@@ -77,4 +77,11 @@ kind-describe:
 # ==================================================================================================
 
 expvarmon:
-	expvarmon -ports=":4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+	~/go/bin/expvarmon -ports=":4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+
+# ==================================================================================================
+# Hey
+# ==================================================================================================
+
+hey:
+	hey -m GET -c 100 -n 10000 http://localhost:3000/test

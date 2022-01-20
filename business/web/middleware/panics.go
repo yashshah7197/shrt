@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/yashshah7197/shrt/business/sys/metrics"
 	"github.com/yashshah7197/shrt/foundation/web"
 )
 
-// Panics recovers from panics and converts the panic to an error so it is reported in Metrics and
+// Panics recovers from panics and converts the panic to an error, so it is reported in Metrics and
 // handled in Errors.
 func Panics() web.Middleware {
 	// This is the actual middleware function to be executed.
@@ -22,6 +23,9 @@ func Panics() web.Middleware {
 					// Stack trace will be provided.
 					trace := debug.Stack()
 					err = fmt.Errorf("ERROR [%v] TRACE[%s]", rec, string(trace))
+
+					// Increment the panics metric.
+					metrics.AddPanic(ctx)
 				}
 			}()
 
