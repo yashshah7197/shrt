@@ -3,11 +3,9 @@ package testgroup
 
 import (
 	"context"
-	"errors"
 	"math/rand"
 	"net/http"
 
-	"github.com/yashshah7197/shrt/business/sys/validate"
 	"github.com/yashshah7197/shrt/foundation/web"
 
 	"go.uber.org/zap"
@@ -21,7 +19,7 @@ type Handlers struct {
 // Test is a basic handler for development purposes.
 func (h Handlers) Test(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	if n := rand.Intn(100); n%2 == 0 {
-		return validate.NewRequestError(errors.New("trusted error"), http.StatusBadRequest)
+		panic("testing panic")
 	}
 
 	status := struct {
