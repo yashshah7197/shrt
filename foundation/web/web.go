@@ -62,7 +62,9 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 
 		// Call the wrapped handler functions.
 		if err := handler(ctx, w, r); err != nil {
-			// Error handling.
+			// Signal a graceful shutdown since the only handler that can possibly be returned to
+			// our base handler is a shutdown error.
+			a.SignalShutdown()
 			return
 		}
 	}
