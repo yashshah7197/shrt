@@ -178,3 +178,7 @@ $RECYCLE.BIN/
 
 # Project binaries
 app/services/shrt-api/shrt-api
+
+# Private/public key files
+private.pem
+public.pem

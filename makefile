@@ -7,6 +7,9 @@ SHELL := /bin/bash
 run shrt-api:
 	go run app/services/shrt-api/main.go | go run app/tooling/logfmt/main.go
 
+shrt-admin:
+	go run app/tooling/admin/main.go
+
 tidy:
 	go mod tidy
 	go mod vendor
@@ -85,3 +88,11 @@ expvarmon:
 
 hey:
 	hey -m GET -c 100 -n 10000 http://localhost:3000/test
+
+# ==================================================================================================
+# Generate a private/public PEM keypair.
+# ==================================================================================================
+
+genkeypair:
+	openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+	openssl rsa -pubout -in private.pem -out public.pem
