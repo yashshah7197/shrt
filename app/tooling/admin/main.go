@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/lestrrat-go/jwx/jwa"
-	"github.com/lestrrat-go/jwx/jws"
+	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/lestrrat-go/jwx/jwt"
 )
 
@@ -24,7 +24,14 @@ func main() {
 	}
 
 	// Generate a new, signed JSON Web Token.
-	err = genToken()
+	tokenString, err := genToken()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// Verify the token.
+	err = verifyToken(tokenString)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -85,12 +92,73 @@ func genKeyPair() error {
 }
 
 // genToken generates a new, signed JSON Web Token.
-func genToken() error {
+func genToken() (string, error) {
+	// Open the private key file for reading.
+	privateFile, err := os.Open("private.pem")
+	if err != nil {
+		return "", fmt.Errorf("opening private key file: %w", err)
+	}
+	defer privateFile.Close()
+
+	// Read the contents of the private key file.
+	privateBytes, err := io.ReadAll(privateFile)
+	if err != nil {
+		return "", fmt.Errorf("reading private key file: %w", err)
+	}
+
+	// Decode the contents of the private key file in to a PEM block.
+	privatePEM, _ := pem.Decode(privateBytes)
+
+	// Parse the private key PEM block in to a private key.
+	privateKey, err := x509.ParsePKCS1PrivateKey(privatePEM.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("parsing private key pem block: %w", err)
+	}
+
+	// Create a JWK private key from our parsed private key.
+	jwkPrivateKey, err := jwk.New(privateKey)
+	if err != nil {
+		return "", fmt.Errorf("creating jwk private key: %w", err)
+	}
+
+	// Set the kid header.
+	err = jwkPrivateKey.Set(jwk.KeyIDKey, "905789cb-61d7-44c8-a7e2-0e51d43d8c85")
+	if err != nil {
+		return "", fmt.Errorf("setting kid header: %w", err)
+	}
+
+	// Generate a new JSON Web Token.
+	token, err := jwt.NewBuilder().
+		Issuer("shrt-api").
+		Subject("b0ef2788-614a-47b6-a7ba-c0c7c75f6d7f").
+		IssuedAt(time.Now().UTC()).
+		Expiration(time.Now().Add(8760*time.Hour).UTC()).
+		Claim("roles", []string{"admin"}).
+		Build()
+	if err != nil {
+		return "", fmt.Errorf("generating jwt: %w", err)
+	}
+
+	// Sign the token with our private key.
+	signedToken, err := jwt.Sign(token, jwa.RS256, jwkPrivateKey)
+	if err != nil {
+		return "", fmt.Errorf("signing token with the private key: %w", err)
+	}
+
+	// Print the signed token to STDOUT.
+	fmt.Println(string(signedToken))
+
+	return string(signedToken), nil
+}
+
+// verifyToken parses a JSON Web Token, verifies it and then validates it.
+func verifyToken(tokenString string) error {
 	// Open the private key file for reading.
 	privateFile, err := os.Open("private.pem")
 	if err != nil {
 		return fmt.Errorf("opening private key file: %w", err)
 	}
+	defer privateFile.Close()
 
 	// Read the contents of the private key file.
 	privateBytes, err := io.ReadAll(privateFile)
@@ -107,33 +175,40 @@ func genToken() error {
 		return fmt.Errorf("parsing private key pem block: %w", err)
 	}
 
-	// Generate a new JSON Web Token.
-	token, err := jwt.NewBuilder().
-		Issuer("shrt-api").
-		Subject("b0ef2788-614a-47b6-a7ba-c0c7c75f6d7f").
-		IssuedAt(time.Now().UTC()).
-		Expiration(time.Now().Add(8760*time.Hour).UTC()).
-		Claim("roles", []string{"admin"}).
-		Build()
+	// Create a JWK public key from the private key.
+	jwkPublicKey, err := jwk.New(privateKey.PublicKey)
 	if err != nil {
-		return fmt.Errorf("generating jwt: %w", err)
+		return fmt.Errorf("creating jwk public key: %w", err)
 	}
 
-	// Add the key ID header.
-	headers := jws.NewHeaders()
-	err = headers.Set("kid", "905789cb-61d7-44c8-a7e2-0e51d43d8c85")
+	// Set the kid header.
+	err = jwkPublicKey.Set(jwk.KeyIDKey, "905789cb-61d7-44c8-a7e2-0e51d43d8c85")
 	if err != nil {
-		return fmt.Errorf("setting jwt headers: %w", err)
+		return fmt.Errorf("setting kid header: %w", err)
 	}
 
-	// Sign the token with our private key.
-	signedToken, err := jwt.Sign(token, jwa.RS256, privateKey, jwt.WithHeaders(headers))
+	// Set the alg header.
+	err = jwkPublicKey.Set(jwk.AlgorithmKey, jwa.RS256)
 	if err != nil {
-		return fmt.Errorf("signing token with the private key: %w", err)
+		return fmt.Errorf("setting alg header: %w", err)
 	}
 
-	// Print the signed token to STDOUT.
-	fmt.Println(string(signedToken))
+	// Create a new JWK key set.
+	keySet := jwk.NewSet()
+	keySet.Add(jwkPublicKey)
+
+	// Parse and validate the token.
+	token, err := jwt.ParseString(
+		tokenString,
+		jwt.WithKeySet(keySet),
+		jwt.WithValidate(true),
+	)
+	if err != nil {
+		return fmt.Errorf("parsing and validating token: %w", err)
+	}
+
+	// Print the subject from the token to STDOUT.
+	fmt.Println("Done! Subject:", token.Subject())
 
 	return nil
 }
