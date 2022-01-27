@@ -182,3 +182,4 @@ app/services/shrt-api/shrt-api
 # Private/public key files
 private.pem
 public.pem
+*.pem
