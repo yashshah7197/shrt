@@ -122,36 +122,29 @@ func (ks *KeyStore) Remove(keyID string) error {
 }
 
 // PrivateKey looks up the keystore for a given key id and returns the corresponding private key.
-func (ks *KeyStore) PrivateKey(keyID string) (*rsa.PrivateKey, error) {
+func (ks *KeyStore) PrivateKey(keyID string) (jwk.Key, error) {
 	// Check if a key with the given id exists in our key set.
 	key, ok := ks.store.LookupKeyID(keyID)
 	if !ok {
 		return nil, errors.New("no key was found with the given key id")
 	}
 
-	// Convert the JWK key into an rsa.PrivateKey.
-	privateKey := rsa.PrivateKey{}
-	if err := key.Raw(&privateKey); err != nil {
-		return nil, fmt.Errorf("looking up private key: %w", err)
-	}
-
-	return &privateKey, nil
+	return key, nil
 }
 
 // PublicKey looks up the keystore for a given key id and returns the corresponding public key.
-func (ks *KeyStore) PublicKey(keyID string) (*rsa.PublicKey, error) {
+func (ks *KeyStore) PublicKey(keyID string) (jwk.Key, error) {
 	// Check if a key with the given id exists in our key set.
 	key, ok := ks.store.LookupKeyID(keyID)
 	if !ok {
 		return nil, errors.New("no key was found with the given key id")
 	}
 
-	// Convert the JWK key into an rsa.PrivateKey.
-	privateKey := rsa.PrivateKey{}
-	if err := key.Raw(&privateKey); err != nil {
-		return nil, fmt.Errorf("looking up public key: %w", err)
+	publicKey, err := key.PublicKey()
+	if err != nil {
+		return nil, errors.New("could not get public key from the private key")
 	}
 
 	// Return the public key from the private key.
-	return &privateKey.PublicKey, nil
+	return publicKey, nil
 }
