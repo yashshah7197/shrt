@@ -183,3 +183,4 @@ app/services/shrt-api/shrt-api
 private.pem
 public.pem
 *.pem
+zarf/keys
