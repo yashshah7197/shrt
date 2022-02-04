@@ -14,6 +14,7 @@ RUN go build -ldflags "-X main.build=${BUILD_REF}"
 FROM alpine:3.15
 ARG BUILD_DATE
 ARG BUILD_REF
+COPY --from=build_shrt-api /shrt/zarf/keys/. /shrt/zarf/keys/.
 COPY --from=build_shrt-api /shrt/app/services/shrt-api/shrt-api /shrt/shrt-api
 WORKDIR /shrt
 CMD ["./shrt-api"]

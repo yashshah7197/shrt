@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/yashshah7197/shrt/app/services/shrt-api/handlers"
+	"github.com/yashshah7197/shrt/business/sys/auth"
+	"github.com/yashshah7197/shrt/foundation/keystore"
 
 	"github.com/ardanlabs/conf"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -64,6 +66,10 @@ func run(logger *zap.SugaredLogger) error {
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s"`
 		}
+		Auth struct {
+			KeysFolder  string `conf:"default:zarf/keys/"`
+			ActiveKeyID string `conf:"default:ecdf8542-fbf3-404d-acdc-f41527a0c3c8"`
+		}
 	}{
 		Version: conf.Version{
 			SVN:  build,
@@ -96,6 +102,22 @@ func run(logger *zap.SugaredLogger) error {
 	logger.Infow("startup", "config", out)
 
 	expvar.NewString("build").Set(build)
+
+	// =============================================================================================
+	// Initialize Authentication & Authorization Support
+	// =============================================================================================
+	logger.Infow("startup", "status", "initializing authentication & authorization support")
+
+	// Construct a keystore based on the key files stored in the specified directory
+	ks, err := keystore.NewFS(os.DirFS(cfg.Auth.KeysFolder))
+	if err != nil {
+		return fmt.Errorf("reading keys from keys folder: %w", err)
+	}
+
+	auth, err := auth.New(cfg.Auth.ActiveKeyID, ks)
+	if err != nil {
+		return fmt.Errorf("constructing auth: %w", err)
+	}
 
 	// =============================================================================================
 	// Start Debug Service
@@ -132,6 +154,7 @@ func run(logger *zap.SugaredLogger) error {
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
 		Shutdown: shutdown,
 		Logger:   logger,
+		Auth:     auth,
 	})
 
 	// Construct a server to service requests against the mux.

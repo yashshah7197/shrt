@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"expvar"
+	"github.com/yashshah7197/shrt/business/sys/auth"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -54,6 +55,7 @@ func DebugMux(build string, logger *zap.SugaredLogger) http.Handler {
 type APIMuxConfig struct {
 	Shutdown chan os.Signal
 	Logger   *zap.SugaredLogger
+	Auth     *auth.Auth
 }
 
 // APIMux constructs an http.Handler with all application routes defined.
@@ -80,4 +82,11 @@ func bindRoutes(app *web.App, cfg APIMuxConfig) {
 	}
 
 	app.Handle(http.MethodGet, "/test", tgh.Test)
+	app.Handle(
+		http.MethodGet,
+		"/testauth",
+		tgh.Test,
+		middleware.Authenticate(cfg.Auth),
+		middleware.Authorize(auth.RoleAdmin),
+	)
 }

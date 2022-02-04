@@ -14,12 +14,12 @@ import (
 // recreate the claims by parsing a token.
 type Auth struct {
 	activeKeyID        string
-	keystore           keystore.KeyStore
+	keystore           *keystore.KeyStore
 	signatureAlgorithm jwa.SignatureAlgorithm
 }
 
 // New creates a new Auth to support authentication and authorization.
-func New(activeKeyID string, keystore keystore.KeyStore) (*Auth, error) {
+func New(activeKeyID string, keystore *keystore.KeyStore) (*Auth, error) {
 	// The activeKeyID represents the private key used to sign new tokens.
 	_, err := keystore.PrivateKey(activeKeyID)
 	if err != nil {
