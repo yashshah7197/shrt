@@ -83,9 +83,15 @@ func (a *Auth) ValidateToken(tokenString string) (Claims, error) {
 	}
 
 	// Parse the roles from the token claims
-	roles, ok := token.Get("roles")
+	r, ok := token.Get("roles")
 	if !ok {
 		return Claims{}, fmt.Errorf("parsing roles from token claims: %w", err)
+	}
+
+	// Put all the parsed roles into a slice of strings
+	var roles []string
+	for _, role := range r.([]interface{}) {
+		roles = append(roles, role.(string))
 	}
 
 	// Recreate the claims from the token.
@@ -94,7 +100,7 @@ func (a *Auth) ValidateToken(tokenString string) (Claims, error) {
 		Subject:   token.Subject(),
 		IssuedAt:  token.IssuedAt(),
 		ExpiresAt: token.Expiration(),
-		Roles:     roles.([]string),
+		Roles:     roles,
 	}
 
 	return claims, nil
